@@ -38,6 +38,15 @@ def home():
     }
 
 
+@app.get("/health")
+def health():
+    import backend.models.ml_models as ml
+    return {
+        "status": "ok",
+        "finbert_loaded": ml._finbert is not None,
+    }
+
+
 @app.get("/companies")
 def get_companies(q: str = ""):
     return search_companies(q)

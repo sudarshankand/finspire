@@ -4,36 +4,37 @@ import { useState } from "react"
 import {
   ChevronDown,
   ChevronUp,
-  Newspaper
+  Newspaper,
+  TrendingUp,
 } from "lucide-react"
 
 import HeadlineCard from "./HeadlineCard"
 import SentimentAnalytics from "./SentimentAnalytics"
+import SentimentHistory from "./SentimentHistory"
+import { useAuth } from "../context/AuthContext"
 
 export default function SentimentResults({
   results
 }) {
 
-  const [expandedCompanies, setExpandedCompanies] = useState({})
+  const { user } = useAuth()
 
-  const [showAllHeadlines, setShowAllHeadlines] = useState({})
+  const [expandedCompanies, setExpandedCompanies] = useState({})
+  const [showAllHeadlines, setShowAllHeadlines]   = useState({})
+  const [showTrend, setShowTrend]                 = useState({})
 
   if (!results.length) return null
 
   function toggleExpanded(symbol) {
-
-    setExpandedCompanies((prev) => ({
-      ...prev,
-      [symbol]: !prev[symbol]
-    }))
+    setExpandedCompanies((prev) => ({ ...prev, [symbol]: !prev[symbol] }))
   }
 
   function toggleAll(symbol) {
+    setShowAllHeadlines((prev) => ({ ...prev, [symbol]: !prev[symbol] }))
+  }
 
-    setShowAllHeadlines((prev) => ({
-      ...prev,
-      [symbol]: !prev[symbol]
-    }))
+  function toggleTrend(symbol) {
+    setShowTrend((prev) => ({ ...prev, [symbol]: !prev[symbol] }))
   }
 
   return (
@@ -74,6 +75,9 @@ export default function SentimentResults({
 
             const showAll =
               showAllHeadlines[company.symbol]
+
+            const trendOpen =
+              showTrend[company.symbol]
 
             const visibleHeadlines = showAll
               ? company.headlines
@@ -222,6 +226,34 @@ export default function SentimentResults({
                 <SentimentAnalytics
                   company={company}
                 />
+
+                {/* Trend chart — signed-in users only */}
+
+                {
+                  user && (
+                    <>
+                      <button
+                        onClick={() => toggleTrend(company.symbol)}
+                        className="
+                          flex items-center gap-2
+                          mb-5 px-5 py-3
+                          rounded-full
+                          bg-cyan-400/10 hover:bg-cyan-400/20
+                          border border-cyan-400/20
+                          text-cyan-600 dark:text-cyan-300
+                          text-sm font-medium
+                          transition-all duration-300
+                        "
+                      >
+                        <TrendingUp size={16} />
+                        {trendOpen ? "Hide Trend" : "Sentiment Trend"}
+                        {trendOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
+
+                      {trendOpen && <SentimentHistory symbol={company.symbol} />}
+                    </>
+                  )
+                }
 
                 {/* Headlines Toggle */}
 

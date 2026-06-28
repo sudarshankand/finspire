@@ -7,8 +7,14 @@ import SearchBox from "./SearchBox"
 import SelectedCompanies from "./SelectedCompanies"
 import SentimentResults from "./SentimentResults"
 import LoadingResults from "./LoadingResults"
+import Watchlist from "./Watchlist"
+
+import { useAuth } from "../context/AuthContext"
+import { saveAnalysis } from "../services/firestore"
 
 export default function Hero() {
+
+  const { user } = useAuth()
 
   const [query, setQuery] = useState("")
   const [selected, setSelected] = useState([])
@@ -32,6 +38,13 @@ export default function Hero() {
 
       setResults(response.data)
 
+      // Persist each result to Firestore for history tracking (fire-and-forget)
+      if (user) {
+        response.data.forEach((result) => {
+          saveAnalysis(user.uid, result, mode).catch(() => {})
+        })
+      }
+
     } catch (err) {
 
       console.error(err)
@@ -39,6 +52,12 @@ export default function Hero() {
     } finally {
 
       setLoading(false)
+    }
+  }
+
+  function addFromWatchlist(company) {
+    if (!selected.find((c) => c.symbol === company.symbol)) {
+      setSelected((prev) => [...prev, company])
     }
   }
 
@@ -350,6 +369,8 @@ export default function Hero() {
             selected={selected}
             setSelected={setSelected}
           />
+
+          <Watchlist onSelect={addFromWatchlist} />
 
           {
             selected.length > 0 && (
