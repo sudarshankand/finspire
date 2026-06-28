@@ -2,7 +2,7 @@
 title: Finspire API
 emoji: 📈
 colorFrom: blue
-colorTo: cyan
+colorTo: blue
 sdk: docker
 pinned: false
 ---
